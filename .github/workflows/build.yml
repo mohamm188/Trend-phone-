@@ -1,0 +1,69 @@
+name: Build APK (Professional)
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # تحميل المشروع
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      # Node.js
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+
+      # تثبيت المكتبات
+      - name: Install dependencies
+        run: npm install
+
+      # بناء الموقع
+      - name: Build Web App
+        run: npm run build
+
+      # تثبيت Capacitor
+      - name: Install Capacitor
+        run: |
+          npm install @capacitor/core
+          npm install @capacitor/cli
+          npm install @capacitor/android
+
+      # إنشاء Capacitor (مرة واحدة فقط)
+      - name: Init Capacitor
+        run: npx cap init TrendPhone com.trend.phone --web-dir=dist
+
+      # إضافة أندرويد
+      - name: Add Android
+        run: npx cap add android
+
+      # نسخ ملفات الموقع
+      - name: Copy Files
+        run: npx cap copy
+
+      # إعداد Java
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: 17
+
+      # بناء APK
+      - name: Build APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      # رفع APK كملف تحميل
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: TrendPhone-APK
+          path: android/app/build/outputs/apk/debug/app-debug.apk
