@@ -12,14 +12,34 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Setup Java
-        uses: actions/setup-java@v3
+      - name: Setup Node
+        uses: actions/setup-node@v3
         with:
-          distribution: 'temurin'
-          java-version: '17'
+          node-version: 20
 
-      - name: Grant permission
-        run: chmod +x gradlew
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build web app
+        run: npm run build
+
+      - name: Install Capacitor
+        run: |
+          npm install @capacitor/core
+          npm install @capacitor/cli
+          npm install @capacitor/android
+
+      - name: Init Capacitor
+        run: npx cap init TrendPhone com.trend.phone
+
+      - name: Add Android
+        run: npx cap add android
+
+      - name: Copy files
+        run: npx cap copy
 
       - name: Build APK
-        run: ./gradlew assembleDebug
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
