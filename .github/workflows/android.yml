@@ -1,0 +1,49 @@
+name: Build APK
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # خطوة 1: نسخ المشروع
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # خطوة 2: تثبيت نسخة ثابتة من Node
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      # خطوة 3: حذف الملفات القديمة وتثبيت الحزم بشكل نظيف
+      - name: Clean install & build
+        run: |
+          rm -rf node_modules
+          rm -f package-lock.json
+          npm install --legacy-peer-deps
+          npm run build
+
+      # خطوة 4: تثبيت Capacitor
+      - name: Install Capacitor
+        run: |
+          npm install @capacitor/core @capacitor/cli
+          npx cap init TrendPhone com.trend.phone --web-dir=dist
+          npx cap add android
+          npx cap copy
+
+      # خطوة 5: بناء APK باستخدام Gradle
+      - name: Build APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      # خطوة 6: رفع الـ APK كـ artifact
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug
+          path: android/app/build/outputs/apk/debug/app-debug.apk
