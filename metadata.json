@@ -1,0 +1,5 @@
+{
+  "name": "Trend Phone Accounting",
+  "description": "A comprehensive AI-powered accounting and inventory management system for Trend Phone smartphone shop, featuring OCR invoice scanning, financial analysis, and multi-user support.",
+  "requestFramePermissions": ["camera"]
+}
