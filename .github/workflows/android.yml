@@ -8,40 +8,40 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # خطوة 1: نسخ المشروع
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # خطوة 2: تثبيت نسخة ثابتة من Node
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
           node-version: 18
 
-      # خطوة 3: حذف الملفات القديمة وتثبيت الحزم بشكل نظيف
-      - name: Clean install & build
-        run: |
-          rm -rf node_modules
-          rm -f package-lock.json
-          npm install --legacy-peer-deps
-          npm run build
+      # نثبت pnpm بدل npm
+      - name: Install pnpm
+        run: npm install -g pnpm
 
-      # خطوة 4: تثبيت Capacitor
-      - name: Install Capacitor
+      # تثبيت الحزم وبناء المشروع
+      - name: Install dependencies & build
         run: |
-          npm install @capacitor/core @capacitor/cli
+          pnpm install
+          pnpm run build
+
+      # إعداد Capacitor
+      - name: Setup Capacitor
+        run: |
+          pnpm add @capacitor/core @capacitor/cli
           npx cap init TrendPhone com.trend.phone --web-dir=dist
           npx cap add android
           npx cap copy
 
-      # خطوة 5: بناء APK باستخدام Gradle
+      # بناء APK
       - name: Build APK
         run: |
           cd android
           chmod +x gradlew
           ./gradlew assembleDebug
 
-      # خطوة 6: رفع الـ APK كـ artifact
+      # رفع APK
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
